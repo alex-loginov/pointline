@@ -1,82 +1,245 @@
-$(document).ready(function(){
+$(document).ready(function() {
+	var myMap;
+
+	$('#form-1').submit(function(e) {
+		e.preventDefault();
+
+		var fd = new FormData;
+		
+		var fileInput = $(this).find('[name=userfile]').prop('files')[0];
+		fd.append('file', fileInput);
+		plotting();
+		
+		function plotting(){
+
+			$.ajax({
+				url: 'functions/parseCoords.php',
+				type: 'POST',
+				processData: false,
+				contentType: false,
+				data: fd,
+				async: true,
+				success: function(data) {
+					//console.log({ data });
+					//return;
+					var towers = JSON.parse(data);
+					console.log({ towers });
 
 
-	var lonlat = ol.proj.transform([37.6094, 55.739], 'EPSG:4326', 'EPSG:3857');
+					init(towers);
+					var lines = getBrokenLines(towers);
+					lines.forEach(addLines);
+					console.log('lines', lines);
+					building_connections();
 
-	  import Feature from 'ol/Feature.js';
-      import Map from 'ol/Map.js';
-      import View from 'ol/View.js';
-      import Point from 'ol/geom/Point.js';
-      import Select from 'ol/interaction/Select.js';
-      import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
-      import Stamen from 'ol/source/Stamen.js';
-      import VectorSource from 'ol/source/Vector.js';
-      import {Icon, Style} from 'ol/style.js';
+				},
+				error: function(error) {
+					console.log('error', error);
+				},	
+			});
+		}
+		
+
+		function building_connections() {
 
 
-      function createStyle(src, img) {
-        return new Style({
-          image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-            anchor: [0.5, 0.96],
-            crossOrigin: 'anonymous',
-            src: src,
-            img: img,
-            imgSize: img ? [img.width, img.height] : undefined
-          }))
-        });
-      }
+			$.ajax({
+				url: 'functions/parseConn.php',
+				type: 'POST',
+				processData: false,
+				contentType: false,
+				data: fd,
+				async: true,
+				success: function(data) {
+					//console.log({ data });
+					//return;
 
-      var iconFeature = new Feature(new Point(lonlat));
-      iconFeature.set('style', createStyle('data/icon.png', undefined));
+					var conns = JSON.parse(data);
+					console.log({ conns });
+					//console.log({ conns });
+					//addLines(conns);
+					//init();
+					//var lines = getBrokenLines(towers);
+					conns.forEach(addLines);
 
-      var map = new Map({
-        layers: [
-          new TileLayer({
-            source: new Stamen({layer: 'watercolor'})
-          }),
-          new VectorLayer({
-            style: function(feature) {
-              return feature.get('style');
-            },
-            source: new VectorSource({features: [iconFeature]})
-          })
-        ],
-        target: document.getElementById('map'),
-        view: new View({
-          center: [0, 0],
-          zoom: 3
-        })
-      });
+					// console.log('lines', lines);
+					// renderCoords(coords);
 
-      var selectStyle = {};
-      var select = new Select({
-        style: function(feature) {
-          var image = feature.get('style').getImage().getImage();
-          if (!selectStyle[image.src]) {
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            canvas.width = image.width;
-            canvas.height = image.height;
-            context.drawImage(image, 0, 0, image.width, image.height);
-            var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            var data = imageData.data;
-            for (var i = 0, ii = data.length; i < ii; i = i + (i % 4 == 2 ? 2 : 1)) {
-              data[i] = 255 - data[i];
-            }
-            context.putImageData(imageData, 0, 0);
-            selectStyle[image.src] = createStyle(undefined, canvas);
-          }
-          return selectStyle[image.src];
-        }
-      });
-      map.addInteraction(select);
-
-      map.on('pointermove', function(evt) {
-        map.getTargetElement().style.cursor =
-            map.hasFeatureAtPixel(evt.pixel) ? 'pointer' : '';
-      });
+				},
+				error: function(error) {
+					console.log('error', error);
+				},	
+			});
+		}
 
 
 
+	});
+
+	// ymaps.ready(init);
+ 
+	function init(coords) {  
+		// console.log('init', coords);
+		myMap = new ymaps.Map("map", {
+			center: [56.309319, 43.962170],
+			zoom: 10
+		}),
+
+		myGeoObject = new ymaps.GeoObject();
+		coords.forEach(function(coord) {
+			var colors = {
+				'VS006-1800128-001': '#a00',
+				'VS006-1800128-002': '#a80',
+				'VS006-1800128-003': '#0a0',
+			};
+
+			myMap.geoObjects.add(new ymaps.Placemark([coord.lat, coord.lon], {
+
+				//balloonContent: coord.nameSupport,
+				//iconCaption: coord.nameSupport,
+				iconContent: coord.nameSupport,
+
+			}, {
+				preset: 'islands#blueCircleIcon',
+				iconColor: colors[coord.idSector],
+				draggable: true
+			}));
+
+		});
+	}
+	
+	function getBrokenLines(allTowers) {
+
+		var groupTowers = _.groupBy(allTowers, 'idSector');
+		var lines = Object.keys(groupTowers).map(function (idSector){
+			var towersByIdSector = groupTowers[idSector];
+			var sortedTowers = _.sortBy(towersByIdSector, ['nameSupport']);
+			var line = sortedTowers.map(function(tower) {
+				return [tower.lat, tower.lon];
+			});
+			return line;
+		});
+		//console.log(lines);
+		return lines;
+
+	}
+
+	function addLines(lines) {
+
+		var myPolyline = new ymaps.Polyline(lines, {
+
+		}, {
+	        // Задаем опции геообъекта.
+	        // Цвет с прозрачностью.
+	        strokeColor: "#00000088",
+	        preset: 'islands#blueCircleIcon',
+	        // Ширину линии.
+	        strokeWidth: 4,
+
+	        // Максимально допустимое количество вершин в ломаной.
+	        editorMaxPoints: 0,
+	        // Добавляем в контекстное меню новый пункт, позволяющий удалить ломаную.
+	        editorMenuManager: function (items) {
+	            items.push({
+	                title: "Удалить линию",
+	                onClick: function () {
+	                    myMap.geoObjects.remove(myPolyline);
+	                }
+	            });
+	            return items;
+	        }
+	    });
+
+	    console.log({ myMap });
+
+	    // Добавляем линию на карту.
+	    myMap.geoObjects.add(myPolyline);
+	    myPolyline.editor.startEditing();
+
+	}
+
+	function build_conn(){
+
+	}
+
+	function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+	  var R = 6371; // Radius of the earth in km
+	  var dLat = deg2rad(lat2-lat1);  // deg2rad below
+	  var dLon = deg2rad(lon2-lon1); 
+	  var a = 
+	    Math.sin(dLat/2) * Math.sin(dLat/2) +
+	    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+	    Math.sin(dLon/2) * Math.sin(dLon/2)
+	    ; 
+	  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+	  var d = R * c; // Distance in km
+	  return d;
+	}
+
+	function deg2rad(deg) {
+	  return deg * (Math.PI/180)
+	}
+
+	const distanceMOWBKK = getDistanceFromLatLonInKm(
+	  55.45, 37.36, 13.45, 100.30
+	);
+
+	
+
+	
+
+	// function renderCoords(coords) {
+
+	// 	var map = new ol.Map({
+	//	   	target: 'map',
+	//	   	layers:[
+	//	   		new ol.layer.Tile({
+	//	   			source: new ol.source.OSM()
+	//	   		})
+	//	   	],
+	//	   	view: new ol.View({
+	//	   		center: ol.proj.fromLonLat([37.41, 8.82]),
+	//	   		zoom: 4
+	//	   	}),
+	//	   });
+
+	// 	var point_feature = new ol.Feature({});
+
+	// 	coords.forEach((coord) => {
+	// 		var lat = coord.lat;
+	// 		var lon = coord.lon;
+	// 		console.log({lat,lon});
+	// 		var point_geom = new ol.geom.Point(ol.proj.transform((lon, lat), 'EPSG:3857', 'EPSG:4326'));
+	// 		point_feature.setGeometry(point_geom);
+	// 	});
+		
+
+	// 	var vector_layer = new ol.layer.Vector({
+	// 	  source: new ol.source.Vector({
+	// 		features: [point_feature]
+	// 	  })
+	// 	})
+
+	// 	map.addLayer(vector_layer);
+	// 	var fill = new ol.style.Fill({
+	// 	  color: [180, 0, 0, 0.3]
+	// 	});
+		
+	// 	var stroke = new ol.style.Stroke({
+	// 	  color: [180, 0, 0, 1],
+	// 	  width: 1
+	// 	});
+	// 	var style = new ol.style.Style({
+	// 	  image: new ol.style.Circle({
+	// 		fill: fill,
+	// 		stroke: stroke,
+	// 		radius: 8
+	// 	  }),
+	// 	});
+	// 	vector_layer.setStyle(style);
+
+	// }
+
+  	
 });
 		
