@@ -78,6 +78,14 @@ $(document).ready(function() {
 
 	// ymaps.ready(init);
  
+	$('#getCoords').submit(function(e) {
+		e.preventDefault();
+		console.log('заходит?');
+
+	});
+
+
+
 	function init(coords) {  
 		// console.log('init', coords);
 		myMap = new ymaps.Map("map", {
@@ -93,7 +101,7 @@ $(document).ready(function() {
 				'VS006-1800128-003': '#0a0',
 			};
 
-			myMap.geoObjects.add(new ymaps.Placemark([coord.lat, coord.lon], {
+			myMap.geoObjects.add(myPlacemark = new ymaps.Placemark([coord.lat, coord.lon], {
 
 				//balloonContent: coord.nameSupport,
 				//iconCaption: coord.nameSupport,
@@ -103,9 +111,18 @@ $(document).ready(function() {
 				preset: 'islands#blueCircleIcon',
 				iconColor: colors[coord.idSector],
 				draggable: true
+
 			}));
+			myPlacemark.events.add('dragend', function (e) {
+               var coords = e.get('target').geometry.getCoordinates();
+               console.log( coords[1].toPrecision(6));
+                console.log( coords[0].toPrecision(6));
+                 //   document.getElementById('geox').value = coords[1].toPrecision(6);
+                	// document.getElementById('geoy').value = coords[0].toPrecision(6);
+            });
 
 		});
+
 	}
 	
 	function getBrokenLines(allTowers) {
@@ -150,7 +167,7 @@ $(document).ready(function() {
 	        }
 	    });
 
-	    console.log({ myMap });
+	    //console.log({ myMap });
 
 	    // Добавляем линию на карту.
 	    myMap.geoObjects.add(myPolyline);

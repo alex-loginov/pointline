@@ -18,6 +18,11 @@
 				   	<input type="submit" value="Обработать">
 				</p>
 		  	</form> 
+		  	<form id="getCoords" enctype="multipart/form-data" class="section-pick_up_file_for_conversion__form">
+			    <p>
+				   	<input type="submit" id="" value="Узнать">
+				</p>
+		  	</form> 
 		</div>
 	</section>
 	<!-- <div id="map" style="position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px;"></div> -->
