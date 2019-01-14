@@ -25,11 +25,10 @@ $(document).ready(function() {
 					var towers = JSON.parse(data);
 					console.log({ towers });
 
-
 					init(towers);
 					var lines = getBrokenLines(towers);
 					lines.forEach(addLines);
-					console.log('lines', lines);
+					//console.log('lines', lines);
 					building_connections();
 
 				},
@@ -87,122 +86,35 @@ $(document).ready(function() {
 
 
 	function init(coords) {  
-		// console.log('init', coords);
+		console.log('init >>');
 		myMap = new ymaps.Map("map", {
 			center: [56.309319, 43.962170],
 			zoom: 10
 		}),
-		myGeoObjects = new ymaps.GeoObject();
 
-
-
-
-
-		// myObjectManager = new ymaps.ObjectManager({
-		// 	//clusterize: true,
-		// 	//gridSize: 32,
-		// 	//clusterDisableClickZoom: true,
-		// 	draggable: true,
-		// });
-		// var objects = [];
-		// coords.forEach(function(coord) {
-		// 	objects.push({
-		// 		type: 'Feature',
-		// 		id: coord.id,
-		// 		geometry: {
-		// 			type: 'Point',
-		// 			coordinates: [coord.lat, coord.lon],
-					
-					
-		// 		},
-		// 		properties: {
-						
-		// 				hintContent: coord.nameSupport,
-		// 				balloonContent: coord.nameSupport,
-		// 				iconContent: coord.nameSupport,
-		// 		}
-		// 	})
-		// });
-		// console.log({objects});
-		// //myObjectManager.objects.options.set('preset', 'islands#blueCircleIcon');
-		
-		// //myObjectManager();
-		// //myObjectManager.objects.options.set('draggable', true);
-		// myObjectManager.objects.options.set('preset', 'islands#blueCircleIcon');
-		// myObjectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
-		// myObjectManager.add(objects);
-		// myMap.geoObjects.add(myObjectManager);
-
-		// coords.forEach(function(coord){
-		// 	myMap.geoObjects.add(myPlacemark = new ymaps.Placemark([coord.lat, coord.lon], {
-
-		// 		//balloonContent: coord.nameSupport,
-		// 		//iconCaption: coord.nameSupport,
-		// 		iconContent: coord.nameSupport,
-		// 		id: coord.id,
-
-		// 	}, {
-		// 		preset: 'islands#blueCircleIcon',
-		// 		//iconColor: colors[coord.idSector],
-		// 		draggable: true
-
-		// 	}));
-
-
-		// });
-		// console.log(myPlacemark);
-
-
-		// var objects = [];
-		// coords.forEach(function(coord) {
-		// 	objects.push({
-		// 		type: 'Feature',
-		// 		id: coord.id,
-		// 		geometry: {
-		// 			type: 'Point',
-		// 			coordinates: [coord.lat, coord.lon]
-		// 		}
-		// 	});
-		// });
-		// myObjectManager.add(objects);
-		// myMap.geoObjects.add(myObjectManager);
-
-
-	
-		myGeoObject = new ymaps.GeoObject();
 		coords.forEach(function(coord) {
-			// var colors = {
-			// 	'VS006-1800128-001': '#a00',
-			// 	'VS006-1800128-002': '#a80',
-			// 	'VS006-1800128-003': '#0a0',
-			// };
-
-			myMap.geoObjects.add(myPlacemark = new ymaps.Placemark([coord.lat, coord.lon], {
-
-				balloonContent: coord.id,
+			var myPlacemark = new ymaps.Placemark([coord.lat, coord.lon], {
+				//balloonContent: coord.id,
 				//iconCaption: coord.id,
 				iconContent: coord.nameSupport,
 
 			}, {
 				preset: 'islands#blueCircleIcon',
-				//iconColor: colors[coord.idSector],
 				draggable: true
 
-			}));
-			myPlacemark.MyID = coord.id;
-			//console.log(myPlacemark.description);
+			})
+
+			myMap.geoObjects.add(myPlacemark);
+
 			myPlacemark.events.add('dragend', function (e) {
-				var idDragendPl = e.get('target').properties.get('balloonContent');
+				//var idDragendPl = e.get('target').properties.get('balloonContent');
 				var coords = e.get('target').geometry.getCoordinates();
-				console.log('Старые коорд: ' + coord.lan + ' ' + coord.lon);
-				//console.log();
-				//console.log(coords[0].toPrecision(6) + " " + coords[1].toPrecision(6)+ " " +myPlacemark.description);
-				coord.lan = coords[0].toPrecision(6);
+				//console.log(coord.id);
+				console.log('Старые коорд: ' + coord.lat + ' ' + coord.lon);
+				coord.lat = coords[0].toPrecision(6);
 				coord.lon = coords[1].toPrecision(6);
-				console.log('Новые коорд: ' + coord.lan + ' ' + coord.lon);
-                 //   document.getElementById('geox').value = coords[1].toPrecision(6);
-                	// document.getElementById('geoy').value = coords[0].toPrecision(6);
-            });
+				console.log('Новые коорд: ' + coord.lat + ' ' + coord.lon);
+			});
 
 		});
 
@@ -254,6 +166,7 @@ $(document).ready(function() {
 
 	    // Добавляем линию на карту.
 	    myMap.geoObjects.add(myPolyline);
+	    return myPolyline;
 	    //myPolyline.editor.startEditing();
 
 	}
