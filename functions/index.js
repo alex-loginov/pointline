@@ -85,18 +85,18 @@ $(document).ready(function() {
 
 
 
-	function init(coords) {  
+	function init(towers) {  
 		console.log('init >>');
 		myMap = new ymaps.Map("map", {
 			center: [56.309319, 43.962170],
-			zoom: 10
+			zoom: 14,
 		}),
 
-		coords.forEach(function(coord) {
-			var myPlacemark = new ymaps.Placemark([coord.lat, coord.lon], {
-				//balloonContent: coord.id,
-				//iconCaption: coord.id,
-				iconContent: coord.nameSupport,
+		towers.forEach(function(tower) {
+			var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
+				//balloonContent: tower.id,
+				//iconCaption: tower.id,
+				iconContent: tower.nameSupport,
 
 			}, {
 				preset: 'islands#blueCircleIcon',
@@ -108,12 +108,17 @@ $(document).ready(function() {
 
 			myPlacemark.events.add('dragend', function (e) {
 				//var idDragendPl = e.get('target').properties.get('balloonContent');
-				var coords = e.get('target').geometry.getCoordinates();
-				//console.log(coord.id);
-				console.log('Старые коорд: ' + coord.lat + ' ' + coord.lon);
-				coord.lat = coords[0].toPrecision(6);
-				coord.lon = coords[1].toPrecision(6);
-				console.log('Новые коорд: ' + coord.lat + ' ' + coord.lon);
+				var newCoords = e.get('target').geometry.getCoordinates();
+				//console.log(tower.id);
+				// console.log('Старые коорд: ' + tower.lat + ' ' + tower.lon);
+				console.log(`Старые коорд: ${tower.lat} ${tower.lon}!`);
+				tower.lat = newCoords[0].toPrecision(6);
+				tower.lon = newCoords[1].toPrecision(6);
+				console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
+				
+				var lines = getBrokenLines(towers);
+				lines.forEach(addLines);
+
 			});
 
 		});
