@@ -106,9 +106,11 @@ $(document).ready(function() {
 			center: [56.309319, 43.962170],
 			zoom: 14,
 		});
+		polylineCollection = new ymaps.GeoObjectCollection();
 		var lines = getBrokenLines(towers);
 		lines.forEach(addLines);
 		build_conn(conns, towers);
+
 		towers.forEach(function(tower) {
 			var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
 				//balloonContent: tower.id,
@@ -130,7 +132,8 @@ $(document).ready(function() {
 				//console.log(`Старые коорд: ${tower.lat} ${tower.lon}!`);
 				tower.lat = newCoords[0].toPrecision(6);
 				tower.lon = newCoords[1].toPrecision(6);
-				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);		
+				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
+				polylineCollection.removeAll()		
 				var lines = getBrokenLines(towers);				
 				lines.forEach(addLines);
 				build_conn(conns, towers);
@@ -138,6 +141,7 @@ $(document).ready(function() {
 			});
 
 		});
+		myMap.setBounds(myPlacemark.geometry.getBounds());
 
 	}
 	
@@ -182,14 +186,13 @@ $(document).ready(function() {
 	            return items;
 	        }
 	    });
-
-	    //console.log({ myMap });
-
 	    // Добавляем линию на карту.
-	    myMap.geoObjects.add(myPolyline);
-	    //return myPolyline;
-	    //myPolyline.editor.startEditing();
+	   
+	    polylineCollection.add(myPolyline);
+	    
+	    myMap.geoObjects.add(polylineCollection);
 
+	    //myMap.setBounds(myPolyline.geometry.getBounds());
 	}
 
 
