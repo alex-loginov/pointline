@@ -12,21 +12,20 @@
 			$xlsFile = PHPExcel_IOFactory::load($uploadfile);
 			$Res1 = array();
 			$xlsFile->setActiveSheetIndex(1);
-			$Start = 3;
+			$Start = 2;
 
 			for ($i= $Start; $i <= 10; $i++) {
 
 				if($xlsFile->getActiveSheet()->getCell('A'.$i)->getValue() <> '') {
-					$nameConn = $xlsFile->getActiveSheet()->getCell('A'.$i )->getValue() . ' ' . $xlsFile->getActiveSheet()->getCell('B'.$i )->getValue();
-					$lat1 = $xlsFile->getActiveSheet()->getCell('C'.$i )->getValue(); //'это не нужный айдишник'sector
-					$lon1 = $xlsFile->getActiveSheet()->getCell('D'.$i )->getValue(); //'это код ВЛ'
-					$lat2 = $xlsFile->getActiveSheet()->getCell('E'.$i )->getValue();
-					$lon2 = $xlsFile->getActiveSheet()->getCell('F'.$i )->getValue();
+					$nameConn = $xlsFile->getActiveSheet()->getCell('B'.$i )->getValue() . ' ' . $xlsFile->getActiveSheet()->getCell('C'.$i )->getValue(); // имя соединения
+					$tower1 = $xlsFile->getActiveSheet()->getCell('D'.$i )->getValue(); //'это код опоры1
+					$tower2 = $xlsFile->getActiveSheet()->getCell('E'.$i )->getValue(); //'это код опоры2'
 
-					$tower1 = array($lat1,$lon1);
-					$tower2 = array($lat2,$lon2);
+					//$tower1 = array($lat1,$lon1);
+					//$tower2 = array($lat2,$lon2);
 					
 					$Row = array(
+						$nameConn,
 						$tower1,
 						$tower2,
 					);

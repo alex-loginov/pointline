@@ -33,10 +33,11 @@
 			//print_r(json_encode($Res);
 
 			}
-
 			print_r(json_encode($Res));
 
+			
 			die();
+
 		}
 		echo "Файл неверного фармата!";
 	}

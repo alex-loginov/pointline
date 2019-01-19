@@ -8,10 +8,8 @@ $(document).ready(function() {
 		
 		var fileInput = $(this).find('[name=userfile]').prop('files')[0];
 		fd.append('file', fileInput);
-		plotting();
-		
+		plotting();		
 		function plotting(){
-
 			$.ajax({
 				url: 'functions/parseCoords.php',
 				type: 'POST',
@@ -20,16 +18,17 @@ $(document).ready(function() {
 				data: fd,
 				async: true,
 				success: function(data) {
-					//console.log({ data });
-					//return;
+					// console.log({ data });
+					// return;
 					var towers = JSON.parse(data);
 					console.log({ towers });
 
-					init(towers);
-					var lines = getBrokenLines(towers);
-					lines.forEach(addLines);
+					//init(towers);
+					//var lines = getBrokenLines(towers);
+					//lines.forEach(addLines);
 					//console.log('lines', lines);
-					building_connections();
+					building_connections(null ,towers);
+					//init(null, towers);
 
 				},
 				error: function(error) {
@@ -38,10 +37,7 @@ $(document).ready(function() {
 			});
 		}
 		
-
-		function building_connections() {
-
-
+		function building_connections(conns ,towers) {
 			$.ajax({
 				url: 'functions/parseConn.php',
 				type: 'POST',
@@ -50,20 +46,12 @@ $(document).ready(function() {
 				data: fd,
 				async: true,
 				success: function(data) {
-					//console.log({ data });
-					//return;
-
+					// console.log({ data });
+					// return;
 					var conns = JSON.parse(data);
-					console.log({ conns });
+					init(conns, towers);
 					//console.log({ conns });
-					//addLines(conns);
-					//init();
-					//var lines = getBrokenLines(towers);
-					conns.forEach(addLines);
-
-					// console.log('lines', lines);
-					// renderCoords(coords);
-
+					//build_conn(conns, towers);
 				},
 				error: function(error) {
 					console.log('error', error);
@@ -71,27 +59,56 @@ $(document).ready(function() {
 			});
 		}
 
-
+		
 
 	});
 
 	// ymaps.ready(init);
  
-	$('#getCoords').submit(function(e) {
-		e.preventDefault();
-		console.log('заходит?');
-
-	});
 
 
+	function build_conn(conns, towers){
+		//console.log({conns}, {towers});
+		var tower1 = [];
+		var tower2 = [];
+		var row = [];
+		var res = [];
+		conns.forEach(function(conn){
 
-	function init(towers) {  
+			towers.forEach(function(tower){
+				//console.log('tower: ' + tower.idSupport);
+				//console.log('tower: ' + conn[1]);
+				if(tower.idSupport == conn[1]){
+					tower1 = [tower.lat,tower.lon];
+					//console.log('tower: ' + tower.idSupport);
+					//console.log(tower1);
+				}
+				if(tower.idSupport == conn[2]){
+					tower2 = [tower.lat,tower.lon];
+
+				}
+				row = [tower1,tower2];
+				//console.log(row);
+				
+			});
+			res.push(row);
+		});
+		//console.log(res);
+		res.forEach(addLines)
+		//addLines(res);
+	}
+
+
+	function init(conns, towers) {  
 		console.log('init >>');
+		
 		myMap = new ymaps.Map("map", {
 			center: [56.309319, 43.962170],
 			zoom: 14,
-		}),
-
+		});
+		var lines = getBrokenLines(towers);
+		lines.forEach(addLines);
+		build_conn(conns, towers);
 		towers.forEach(function(tower) {
 			var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
 				//balloonContent: tower.id,
@@ -105,19 +122,18 @@ $(document).ready(function() {
 			})
 
 			myMap.geoObjects.add(myPlacemark);
-
 			myPlacemark.events.add('dragend', function (e) {
 				//var idDragendPl = e.get('target').properties.get('balloonContent');
 				var newCoords = e.get('target').geometry.getCoordinates();
 				//console.log(tower.id);
 				// console.log('Старые коорд: ' + tower.lat + ' ' + tower.lon);
-				console.log(`Старые коорд: ${tower.lat} ${tower.lon}!`);
+				//console.log(`Старые коорд: ${tower.lat} ${tower.lon}!`);
 				tower.lat = newCoords[0].toPrecision(6);
 				tower.lon = newCoords[1].toPrecision(6);
-				console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
-				
-				var lines = getBrokenLines(towers);
+				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);		
+				var lines = getBrokenLines(towers);				
 				lines.forEach(addLines);
+				build_conn(conns, towers);
 
 			});
 
@@ -171,14 +187,11 @@ $(document).ready(function() {
 
 	    // Добавляем линию на карту.
 	    myMap.geoObjects.add(myPolyline);
-	    return myPolyline;
+	    //return myPolyline;
 	    //myPolyline.editor.startEditing();
 
 	}
 
-	function build_conn(){
-
-	}
 
 	function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
 	  var R = 6371; // Radius of the earth in km
