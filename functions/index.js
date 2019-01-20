@@ -27,7 +27,7 @@ $(document).ready(function() {
 					//var lines = getBrokenLines(towers);
 					//lines.forEach(addLines);
 					//console.log('lines', lines);
-					building_connections(null ,towers);
+					building_connections(towers);
 					//init(null, towers);
 
 				},
@@ -37,7 +37,7 @@ $(document).ready(function() {
 			});
 		}
 		
-		function building_connections(conns ,towers) {
+		function building_connections(towers) {
 			$.ajax({
 				url: 'functions/parseConn.php',
 				type: 'POST',
@@ -68,34 +68,28 @@ $(document).ready(function() {
 
 
 	function build_conn(conns, towers){
-		//console.log({conns}, {towers});
+		var distConns = 0;
 		var tower1 = [];
 		var tower2 = [];
 		var row = [];
 		var res = [];
 		conns.forEach(function(conn){
-
 			towers.forEach(function(tower){
-				//console.log('tower: ' + tower.idSupport);
-				//console.log('tower: ' + conn[1]);
 				if(tower.idSupport == conn[1]){
 					tower1 = [tower.lat,tower.lon];
-					//console.log('tower: ' + tower.idSupport);
-					//console.log(tower1);
 				}
 				if(tower.idSupport == conn[2]){
 					tower2 = [tower.lat,tower.lon];
-
 				}
 				row = [tower1,tower2];
-				//console.log(row);
-				
 			});
 			res.push(row);
 		});
-		//console.log(res);
-		res.forEach(addLines)
-		//addLines(res);
+
+		var distance = res.reduce(function(distance, re) {
+			return distance + addLines(re);
+		}, 0);
+		return distance;
 	}
 
 
@@ -107,10 +101,16 @@ $(document).ready(function() {
 			zoom: 14,
 		});
 		polylineCollection = new ymaps.GeoObjectCollection();
-		var lines = getBrokenLines(towers);
-		lines.forEach(addLines);
-		build_conn(conns, towers);
 
+		var lines = getBrokenLines(towers);
+		// lines.forEach(addLines);
+		var distanceLine = lines.reduce(function(distance, line) {
+			return distance + addLines(line);
+		}, 0);
+
+		var distanceConn = build_conn(conns, towers);
+		var totalDistance = distanceLine + distanceConn;
+		console.log(totalDistance);
 		towers.forEach(function(tower) {
 			var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
 				//balloonContent: tower.id,
@@ -128,15 +128,28 @@ $(document).ready(function() {
 				//var idDragendPl = e.get('target').properties.get('balloonContent');
 				var newCoords = e.get('target').geometry.getCoordinates();
 				//console.log(tower.id);
-				// console.log('Старые коорд: ' + tower.lat + ' ' + tower.lon);
+				//console.log('Старые коорд: ' + tower.lat + ' ' + tower.lon);
 				//console.log(`Старые коорд: ${tower.lat} ${tower.lon}!`);
-				tower.lat = newCoords[0].toPrecision(6);
-				tower.lon = newCoords[1].toPrecision(6);
+				// tower.lat = newCoords[0].toPrecision(6);
+				// tower.lon = newCoords[1].toPrecision(6);
+				tower.lat = newCoords[0];
+				tower.lon = newCoords[1];
 				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
 				polylineCollection.removeAll()		
-				var lines = getBrokenLines(towers);				
-				lines.forEach(addLines);
-				build_conn(conns, towers);
+				var lines = getBrokenLines(towers);
+				// lines.forEach(addLines);
+				var distanceLine = lines.reduce(function(distance, line) {
+					return distance + addLines(line);
+				}, 0);
+
+				//console.log({distance});
+
+				var distanceConn = build_conn(conns, towers);
+				var totalDistance = distanceLine + distanceConn;
+				//console.log(summDist);
+				console.log(totalDistance);
+				//console.log({distance1});
+
 
 			});
 
@@ -161,37 +174,18 @@ $(document).ready(function() {
 
 	}
 
-	function addLines(lines) {
+	function addLines(line) {
+		var distPolyline = 0;
 
-		var myPolyline = new ymaps.Polyline(lines, {
-
-		}, {
-	        // Задаем опции геообъекта.
-	        // Цвет с прозрачностью.
-	        strokeColor: "#00000088",
-	        preset: 'islands#blueCircleIcon',
-	        // Ширину линии.
-	        strokeWidth: 4,
-
-	        // Максимально допустимое количество вершин в ломаной.
-	        editorMaxPoints: 0,
-	        // Добавляем в контекстное меню новый пункт, позволяющий удалить ломаную.
-	        editorMenuManager: function (items) {
-	            items.push({
-	                title: "Удалить линию",
-	                onClick: function () {
-	                    myMap.geoObjects.remove(myPolyline);
-	                }
-	            });
-	            return items;
-	        }
-	    });
-	    // Добавляем линию на карту.
-	   
-	    polylineCollection.add(myPolyline);
-	    
+		var lineString = new ymaps.geometry.LineString(line);
+    	var geoObject = new ymaps.GeoObject({ geometry: lineString });
+    	polylineCollection.add(geoObject);
 	    myMap.geoObjects.add(polylineCollection);
 
+	    var distance = geoObject.geometry.getDistance();
+    	//console.log(Polyline);
+	    //distPolyline = myPolyline.geometry.getDistance();
+	    return distance;
 	    //myMap.setBounds(myPolyline.geometry.getBounds());
 	}
 
