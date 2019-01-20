@@ -141,7 +141,7 @@ $(document).ready(function() {
 			});
 
 		});
-		myMap.setBounds(myPlacemark.geometry.getBounds());
+		//myMap.setBounds(myPlacemark.geometry.getBounds());
 
 	}
 	
