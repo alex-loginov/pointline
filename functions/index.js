@@ -64,10 +64,43 @@ $(document).ready(function() {
 	});
 
 	// ymaps.ready(init);
- 
+ 	function outputDistance(towers){
+ 		console.log('outputDistance: >>');
+		var groupTowers = _.groupBy(towers, 'idSector');
 
+		var sectorIds = Object.keys(groupTowers);
+
+		var lines = sectorIds.map(function (idSector){
+			var towersByIdSector = groupTowers[idSector];
+			var sortedTowers = _.sortBy(towersByIdSector, ['nameSupport']);
+			var lenSortedTowers = sortedTowers.length;
+			var outputDistance = [];
+
+			for(var i = 0; i < lenSortedTowers-1; i++){
+				var coordTower1 = [sortedTowers[i].lat, sortedTowers[i].lon];
+				var coordTower2 = [sortedTowers[i+1].lat, sortedTowers[i+1].lon];
+
+				outputDistance.push({
+					from: sortedTowers[i].nameSupport,
+					to: sortedTowers[i+1].nameSupport,
+					distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
+				});
+			}
+			return outputDistance;
+		});
+
+
+		console.log({sectorIds});
+
+		
+ 	}
+
+	function getDistanceBetweenTwoTowers(tower1, tower2){
+		return ymaps.coordSystem.geo.getDistance(tower1, tower2);
+	}
 
 	function build_conn(conns, towers){
+		console.log(conns);
 		var distConns = 0;
 		var tower1 = [];
 		var tower2 = [];
@@ -103,6 +136,7 @@ $(document).ready(function() {
 		polylineCollection = new ymaps.GeoObjectCollection();
 
 		var lines = getBrokenLines(towers);
+		outputDistance(towers);
 		// lines.forEach(addLines);
 		var distanceLine = lines.reduce(function(distance, line) {
 			return distance + addLines(line);
@@ -137,6 +171,7 @@ $(document).ready(function() {
 				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
 				polylineCollection.removeAll()		
 				var lines = getBrokenLines(towers);
+				
 				// lines.forEach(addLines);
 				var distanceLine = lines.reduce(function(distance, line) {
 					return distance + addLines(line);
@@ -181,7 +216,8 @@ $(document).ready(function() {
     	var geoObject = new ymaps.GeoObject({ geometry: lineString });
     	polylineCollection.add(geoObject);
 	    myMap.geoObjects.add(polylineCollection);
-
+	    var a = polylineCollection.toArray();
+	    //console.log(a);
 	    var distance = geoObject.geometry.getDistance();
     	//console.log(Polyline);
 	    //distPolyline = myPolyline.geometry.getDistance();
