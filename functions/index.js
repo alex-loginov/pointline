@@ -64,34 +64,73 @@ $(document).ready(function() {
 	});
 
 	// ymaps.ready(init);
- 	function outputDistance(towers){
+ 	function outputDistance(conns, towers){
  		console.log('outputDistance: >>');
-		var groupTowers = _.groupBy(towers, 'idSector');
+ 		//var coordTowerLast = 0;
+ 		//var flag = 0;
 
+ 		var coordTowerLast = [];
+ 		var coordTowerFirst = [];
+		var groupTowers = _.groupBy(towers, 'idSector');
+		var sortedTowers = [];
 		var sectorIds = Object.keys(groupTowers);
 
-		var lines = sectorIds.map(function (idSector){
+		var lines = sectorIds.map(function (idSector, i) {
+			var lenSectorIds = sectorIds.length;
 			var towersByIdSector = groupTowers[idSector];
-			var sortedTowers = _.sortBy(towersByIdSector, ['nameSupport']);
+			sortedTowers = _.sortBy(towersByIdSector, ['nameSupport']);
 			var lenSortedTowers = sortedTowers.length;
-			var outputDistance = [];
+			var outputDistanceM = [];
+
+
 
 			for(var i = 0; i < lenSortedTowers-1; i++){
 				var coordTower1 = [sortedTowers[i].lat, sortedTowers[i].lon];
 				var coordTower2 = [sortedTowers[i+1].lat, sortedTowers[i+1].lon];
-
-				outputDistance.push({
+				outputDistanceM.push({
 					from: sortedTowers[i].nameSupport,
 					to: sortedTowers[i+1].nameSupport,
 					distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
 				});
 			}
-			return outputDistance;
+			
+			
+			return outputDistanceM;
 		});
+		console.log({lines});
+		console.log(conns);
+		var distConns = 0;
+		var coordTower1 = [];
+		var coordTower2 = [];
+		var nameTower1 = [];
+		var nameTower2 = [];
+		var row = [];
+		var res = [];
+		var outputDistanceM = [];
+		lines.push(conns.map(function(conn){
+			towers.forEach(function(tower){
+				
+				if(tower.idSupport == conn[1]){
+					coordTower1 = [tower.lat,tower.lon];
+					nameTower1 = tower.nameSupport;
+				}
+				if(tower.idSupport == conn[2]){
+					coordTower2 = [tower.lat,tower.lon];
+					nameTower2 = tower.nameSupport;
+				}
+				
+			});
+			
+			outputDistanceM.push({
+					from: nameTower1,
+					to: nameTower2,
+					distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
+				});
+			//console.log({outputDistanceM});
+			return outputDistanceM;
+		}));
 
-
-		console.log({sectorIds});
-
+		console.log({lines});
 		
  	}
 
@@ -118,7 +157,7 @@ $(document).ready(function() {
 			});
 			res.push(row);
 		});
-
+		console.log({res});
 		var distance = res.reduce(function(distance, re) {
 			return distance + addLines(re);
 		}, 0);
@@ -136,7 +175,7 @@ $(document).ready(function() {
 		polylineCollection = new ymaps.GeoObjectCollection();
 
 		var lines = getBrokenLines(towers);
-		outputDistance(towers);
+		outputDistance(conns, towers);
 		// lines.forEach(addLines);
 		var distanceLine = lines.reduce(function(distance, line) {
 			return distance + addLines(line);
