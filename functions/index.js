@@ -3,13 +3,15 @@ $(document).ready(function() {
 
 	$('#form-1').submit(function(e) {
 		e.preventDefault();
-
 		var fd = new FormData;
 		
 		var fileInput = $(this).find('[name=userfile]').prop('files')[0];
+		var fileInputName = fileInput.name;
+		console.log(fileInputName);
 		fd.append('file', fileInput);
-		plotting();		
-		function plotting(){
+		plotting(fileInputName);		
+		function plotting(fileInputName){
+			console.log(fileInputName);
 			$.ajax({
 				url: 'functions/parseCoords.php',
 				type: 'POST',
@@ -27,7 +29,9 @@ $(document).ready(function() {
 					//var lines = getBrokenLines(towers);
 					//lines.forEach(addLines);
 					//console.log('lines', lines);
-					building_connections(towers);
+					console.log({fileInputName});
+					building_connections(towers, fileInputName);
+
 					//init(null, towers);
 
 				},
@@ -37,7 +41,7 @@ $(document).ready(function() {
 			});
 		}
 		
-		function building_connections(towers) {
+		function building_connections(towers, fileInputName) {
 			$.ajax({
 				url: 'functions/parseConn.php',
 				type: 'POST',
@@ -49,7 +53,7 @@ $(document).ready(function() {
 					// console.log({ data });
 					// return;
 					var conns = JSON.parse(data);
-					init(conns, towers);
+					init(conns, towers, fileInputName);
 					//console.log({ conns });
 					//build_conn(conns, towers);
 				},
@@ -97,8 +101,6 @@ $(document).ready(function() {
 			
 			return outputDistanceM;
 		});
-		console.log({lines});
-		console.log(conns);
 		var distConns = 0;
 		var coordTower1 = [];
 		var coordTower2 = [];
@@ -106,31 +108,44 @@ $(document).ready(function() {
 		var nameTower2 = [];
 		var row = [];
 		var res = [];
-		var outputDistanceM = [];
-		lines.push(conns.map(function(conn){
+		// var outputDistanceM1 = [];
+		lines = lines.concat([conns.map(function(conn){
+			// console.log({test1: JSON.parse(JSON.stringify(outputDistanceM1))});
 			towers.forEach(function(tower){
 				
-				if(tower.idSupport == conn[1]){
+				if (tower.idSupport == conn[1]){
+
 					coordTower1 = [tower.lat,tower.lon];
 					nameTower1 = tower.nameSupport;
+
 				}
-				if(tower.idSupport == conn[2]){
+				if (tower.idSupport == conn[2]){
 					coordTower2 = [tower.lat,tower.lon];
 					nameTower2 = tower.nameSupport;
 				}
 				
 			});
 			
-			outputDistanceM.push({
-					from: nameTower1,
-					to: nameTower2,
-					distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
-				});
-			//console.log({outputDistanceM});
-			return outputDistanceM;
-		}));
+			// outputDistanceM1.push();
 
-		console.log({lines});
+			return {
+				from: nameTower1,
+				to: nameTower2,
+				distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
+			};
+		})]);
+		//преобразование двумерного массива Line в дномерный массива 
+		// var sLines = [];
+		// for (var i = 0; i < lines.length;i++){
+		// 	var linesRow = lines[i];
+		// 	console.log({linesRow});
+		// 	for (var q = 0; q < linesRow.length; q++){
+		// 		console.log('linesRow[q]:',linesRow[q]);
+
+		// 		sLines.push(linesRow[q]);
+		// 	}
+		// }
+		// console.log('!', sLines.sort((a, b) => a.from - b.from)); //сортировка массива по возрастанию
 		
  	}
 
@@ -139,7 +154,7 @@ $(document).ready(function() {
 	}
 
 	function build_conn(conns, towers){
-		console.log(conns);
+		//console.log(conns);
 		var distConns = 0;
 		var tower1 = [];
 		var tower2 = [];
@@ -156,6 +171,7 @@ $(document).ready(function() {
 				row = [tower1,tower2];
 			});
 			res.push(row);
+
 		});
 		console.log({res});
 		var distance = res.reduce(function(distance, re) {
@@ -165,8 +181,9 @@ $(document).ready(function() {
 	}
 
 
-	function init(conns, towers) {  
-		console.log('init >>');
+	function init(conns, towers, fileInputName) {  
+
+		console.log(fileInputName);
 		
 		myMap = new ymaps.Map("map", {
 			center: [56.309319, 43.962170],
@@ -229,7 +246,45 @@ $(document).ready(function() {
 
 		});
 		//myMap.setBounds(myPlacemark.geometry.getBounds());
+		console.log(fileInputName);
+		$('#saveRes').click(function() {
 
+			var data = {
+				fileName: fileInputName,
+				towers,
+			};
+
+			$.post('functions/saveFile.php', data)
+				.then((data) => {
+
+					console.log('success', { data });
+
+				}).fail((error) => {
+
+					console.log('error', { error });
+
+				});
+
+			// $.post('./saveFile.php', {
+			// 	fileName: fileInputName,
+			// 	towers: towers,
+			// }, function(data) {
+			// 	console.log('result', { data });
+			// 	return;
+			// 	//var towers = JSON.parse(data);
+			// 	//console.log({ towers });
+
+			// 	//init(towers);
+			// 	//var lines = getBrokenLines(towers);
+			// 	//lines.forEach(addLines);
+			// 	//console.log('lines', lines);
+			// 	//building_connections(towers);
+			// 	//init(null, towers);
+
+			// }, function(error) {
+			// 	console.log('error', error);
+			// });
+		});
 	}
 	
 	function getBrokenLines(allTowers) {
