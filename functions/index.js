@@ -257,7 +257,8 @@ $(document).ready(function() {
 			$.post('functions/saveFile.php', data)
 				.then((data) => {
 
-					console.log('success', { data });
+					console.log('success');
+					console.log(data);
 
 				}).fail((error) => {
 

@@ -1,19 +1,16 @@
 <?php
 	require_once 'Classes/PHPExcel.php';
 
-	// $phpExcel = new PHPExcel();
-	// $json = file_get_contents('php://input');
-	// $obj = json_decode($json);
-	// $fileInputName = filter_input(INPUT_POST, 'fileName');
-	// $towers = filter_input(INPUT_POST, 'towers');
 	$fileName = $_POST['fileName'];
 	$towers = $_POST['towers'];
-	
-	print_r($fileName . '\n' . $towers);
+	//$boot_path = $_SERVER['DOCUMENT_ROOT'] . '/download_files/'.$fileName;
+	//print_r($towers);
 
-	// $excel2 = PHPExcel_IOFactory::createReader('Excel2007'); 
-	// $excel2 = $excel2->load('nTest.xlsx'); // Empty Sheet 
-	// $excel2->setActiveSheetIndex(0); 
+	//$xlsFile = PHPExcel_IOFactory::createReader('Excel2007'); 
+	//echo $boot_path;
+	$xlsFile = PHPExcel_IOFactory::load($fileName); // Empty Sheet 
+
+	$xlsFile->setActiveSheetIndex(0); 
 	// $excel2->getActiveSheet()->setCellValue('C6', '4') 
 	//     ->setCellValue('C7', '5') 
 	//     ->setCellValue('C8', '6')  
@@ -26,35 +23,54 @@
 	// $objWriter->save('Nimit New.xlsx'); 
 
 
+	//print_r($towers[0]);
+	$Start = 8;
+	//$Res = array();
+	$xlsFile->setActiveSheetIndex(0);
+	//print_r($towers);
+	// asort($towers);
+	// print_r($towers);
+	$towersLen = count($towers);
+	for ($i = 0; $i < $towersLen; $i++){
+		if($xlsFile->getActiveSheet()->getCell('A'.$Start)->getValue() <> ''){
 
-	// $Start = 8;
-	// $Res = array();
-	// $xlsFile->setActiveSheetIndex(0);
+			//echo('из таблицы:' . $xlsFile->getActiveSheet()->getCell('A'.$Start)->getValue() . '\n');
+			//print_r($towers[$i]['id']);
+			$id = $xlsFile->getActiveSheet()->getCell('A'.$Start)->getValue();
+
+			print_r($id . '==' . $towers[$i]['id']);
+			//for ()
+			if ($id == $towers[$i]['id']){
+				$xlsFile->getActiveSheet()->setCellValue(('T'.$Start), $towers[$i]['lat']);
+				$Start++;
+				$xlsFile->getActiveSheet()->setCellValue(('T'.$Start), $towers[$i]['lon']);
+				echo 'true';
+				$Start++;
+
+			} else {
+				$Start++;
+				$Start++;
+				echo 'false';
+			}
+
+			print_r(' ');
+
+			
+			
+		}
+	}
+	$objWriter = PHPExcel_IOFactory::createWriter($xlsFile, 'Excel5');
+	$objWriter->save($fileName); 
 	// for ($i= $Start; $i <= 1000; $i = $i+2) {
 	// 	if($xlsFile->getActiveSheet()->getCell('A'.$i)->getValue() <> '') {
-	// 		$nameSupport_vv = $xlsFile->getActiveSheet()->getCell('G'.$i )->getValue();
-	// 		$nameSupport_v = (int) (substr($nameSupport_vv, strrpos($nameSupport_vv, ' ')+1));
-	// 		$Row = array(
-	// 			'id' => $xlsFile->getActiveSheet()->getCell('A'.$i )->getValue(), //'это не нужный айдишник'sector
-	// 			'idVL' => $xlsFile->getActiveSheet()->getCell('B'.$i )->getValue(), //'это код ВЛ'
-	// 			'nameVL' => $xlsFile->getActiveSheet()->getCell('C'.$i )->getValue(), //''
-	// 			'idSector' => $xlsFile->getActiveSheet()->getCell('D'.$i )->getValue(), //'это код Участка ВЛ'
-	// 			'nameSector' => $xlsFile->getActiveSheet()->getCell('E'.$i )->getValue(), //''
-	// 			'idSupport' => $xlsFile->getActiveSheet()->getCell('F'.$i )->getValue(), //'это код Опоры Участка ВЛ'
-	// 			'nameSupport' => $nameSupport_v, //'номер опоры'
-	// 			'lat' => $xlsFile->getActiveSheet()->getCell('T'.$i )->getValue(), //'широта'
-	// 			'lon' => $xlsFile->getActiveSheet()->getCell('T'.($i+1) )->getValue(), //'долгота'
-	// 		);
-
-	// 		$Res[] = $Row;
-	// 		//print_r($Res);
+	// 		$xlsFile->getActiveSheet()->getCell('A'.$i )->getValue() == $towers[0][id]
 	// 	}
 	// //print_r(json_encode($Res);
 
 	// }
-	// print_r(json_encode($Res));
+	//print_r(json_encode($Res));
 
-	
+	//print_r($fileName);
 	die();
 
 ?>
