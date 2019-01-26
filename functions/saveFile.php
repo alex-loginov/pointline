@@ -3,7 +3,7 @@
 
 	$fileName = $_POST['fileName'];
 	$towers = $_POST['towers'];
-	$xlsFile = PHPExcel_IOFactory::load($fileName); // Empty Sheet 
+	$xlsFile = PHPExcel_IOFactory::load($fileName);
 	$xlsFile->setActiveSheetIndex(0); 
 	$Start = 8;
 	$xlsFile->setActiveSheetIndex(0);

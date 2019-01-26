@@ -1,17 +1,16 @@
 $(document).ready(function() {
 	var myMap;
-
+	ymaps.ready(build_map);
+	
 	$('#form-1').submit(function(e) {
 		e.preventDefault();
 		var fd = new FormData;
 		
 		var fileInput = $(this).find('[name=userfile]').prop('files')[0];
 		var fileInputName = fileInput.name;
-		console.log(fileInputName);
 		fd.append('file', fileInput);
 		plotting(fileInputName);		
 		function plotting(fileInputName){
-			console.log(fileInputName);
 			$.ajax({
 				url: 'functions/parseCoords.php',
 				type: 'POST',
@@ -23,13 +22,13 @@ $(document).ready(function() {
 					// console.log({ data });
 					// return;
 					var towers = JSON.parse(data);
-					console.log({ towers });
-
+					//console.log({ towers });
+					
 					//init(towers);
 					//var lines = getBrokenLines(towers);
 					//lines.forEach(addLines);
 					//console.log('lines', lines);
-					console.log({fileInputName});
+					//console.log({fileInputName});
 					building_connections(towers, fileInputName);
 
 					//init(null, towers);
@@ -69,7 +68,7 @@ $(document).ready(function() {
 
 	// ymaps.ready(init);
  	function outputDistance(conns, towers){
- 		console.log('outputDistance: >>');
+ 		//console.log('outputDistance: >>');
  		//var coordTowerLast = 0;
  		//var flag = 0;
 
@@ -134,19 +133,8 @@ $(document).ready(function() {
 				distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
 			};
 		})]);
-		//преобразование двумерного массива Line в дномерный массива 
-		// var sLines = [];
-		// for (var i = 0; i < lines.length;i++){
-		// 	var linesRow = lines[i];
-		// 	console.log({linesRow});
-		// 	for (var q = 0; q < linesRow.length; q++){
-		// 		console.log('linesRow[q]:',linesRow[q]);
-
-		// 		sLines.push(linesRow[q]);
-		// 	}
-		// }
-		// console.log('!', sLines.sort((a, b) => a.from - b.from)); //сортировка массива по возрастанию
-		
+		//console.log(lines);
+		return lines;
  	}
 
 	function getDistanceBetweenTwoTowers(tower1, tower2){
@@ -173,34 +161,68 @@ $(document).ready(function() {
 			res.push(row);
 
 		});
-		console.log({res});
+		//console.log({res});
 		var distance = res.reduce(function(distance, re) {
 			return distance + addLines(re);
 		}, 0);
 		return distance;
 	}
-
-
-	function init(conns, towers, fileInputName) {  
-
-		console.log(fileInputName);
-		
+	function build_map(){
 		myMap = new ymaps.Map("map", {
 			center: [56.309319, 43.962170],
 			zoom: 14,
 		});
-		polylineCollection = new ymaps.GeoObjectCollection();
+	}
 
+
+	function check_distances(conns, towers){
+
+		var distanceMass = outputDistance(conns, towers);
+		console.log({distanceMass});
+
+		var averageDistances = distanceMass.map(function(line) {
+
+			return line.reduce(function(distance, tower) {
+				return distance + tower.distance;
+			}, 0) / line.length;
+
+		});
+
+		console.log({averageDistances});
+
+		// for(var i = 0; i <= distanceMass.length; i++){
+		// 	var part = distanceMass[i];
+		// 	console.log({part});
+		// 	//var sumPart = part.reduce((sum, ) => );
+		// 	var sumPart = 0;
+		// 	for(var q =0; q < part.length; q++){
+		// 		var dist = part[q];
+		// 		console.log({dist});
+		// 		//var dists = JSON.parse(part[q]);
+		// 		//console.log({dists});
+		// 		sumPart += dist.distance;
+		// 		console.log({sumPart});
+		// 	}
+
+		// 	var sredDist = sumPart/part.length;
+		// 	console.log(sredDist);
+		// }
+
+	}
+
+
+	function init(conns, towers, fileInputName) {  
+		polylineCollection = new ymaps.GeoObjectCollection();
 		var lines = getBrokenLines(towers);
+
 		outputDistance(conns, towers);
-		// lines.forEach(addLines);
+
 		var distanceLine = lines.reduce(function(distance, line) {
 			return distance + addLines(line);
 		}, 0);
-
 		var distanceConn = build_conn(conns, towers);
 		var totalDistance = distanceLine + distanceConn;
-		console.log(totalDistance);
+		//console.log(totalDistance);
 		towers.forEach(function(tower) {
 			var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
 				//balloonContent: tower.id,
@@ -217,11 +239,6 @@ $(document).ready(function() {
 			myPlacemark.events.add('dragend', function (e) {
 				//var idDragendPl = e.get('target').properties.get('balloonContent');
 				var newCoords = e.get('target').geometry.getCoordinates();
-				//console.log(tower.id);
-				//console.log('Старые коорд: ' + tower.lat + ' ' + tower.lon);
-				//console.log(`Старые коорд: ${tower.lat} ${tower.lon}!`);
-				// tower.lat = newCoords[0].toPrecision(6);
-				// tower.lon = newCoords[1].toPrecision(6);
 				tower.lat = newCoords[0];
 				tower.lon = newCoords[1];
 				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
@@ -232,28 +249,19 @@ $(document).ready(function() {
 				var distanceLine = lines.reduce(function(distance, line) {
 					return distance + addLines(line);
 				}, 0);
-
-				//console.log({distance});
-
 				var distanceConn = build_conn(conns, towers);
 				var totalDistance = distanceLine + distanceConn;
-				//console.log(summDist);
-				console.log(totalDistance);
-				//console.log({distance1});
-
-
+				outputDistance(conns, towers);
+				check_distances(conns, towers);
+				//console.log(totalDistance);
 			});
 
 		});
-		//myMap.setBounds(myPlacemark.geometry.getBounds());
-		console.log(fileInputName);
 		$('#saveRes').click(function() {
-
 			var data = {
 				fileName: fileInputName,
 				towers,
 			};
-
 			$.post('functions/saveFile.php', data)
 				.then((data) => {
 
@@ -263,28 +271,7 @@ $(document).ready(function() {
 				}).fail((error) => {
 
 					console.log('error', { error });
-
 				});
-
-			// $.post('./saveFile.php', {
-			// 	fileName: fileInputName,
-			// 	towers: towers,
-			// }, function(data) {
-			// 	console.log('result', { data });
-			// 	return;
-			// 	//var towers = JSON.parse(data);
-			// 	//console.log({ towers });
-
-			// 	//init(towers);
-			// 	//var lines = getBrokenLines(towers);
-			// 	//lines.forEach(addLines);
-			// 	//console.log('lines', lines);
-			// 	//building_connections(towers);
-			// 	//init(null, towers);
-
-			// }, function(error) {
-			// 	console.log('error', error);
-			// });
 		});
 	}
 	
@@ -320,85 +307,6 @@ $(document).ready(function() {
 	    //myMap.setBounds(myPolyline.geometry.getBounds());
 	}
 
-
-	function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
-	  var R = 6371; // Radius of the earth in km
-	  var dLat = deg2rad(lat2-lat1);  // deg2rad below
-	  var dLon = deg2rad(lon2-lon1); 
-	  var a = 
-	    Math.sin(dLat/2) * Math.sin(dLat/2) +
-	    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-	    Math.sin(dLon/2) * Math.sin(dLon/2)
-	    ; 
-	  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-	  var d = R * c; // Distance in km
-	  return d;
-	}
-
-	function deg2rad(deg) {
-	  return deg * (Math.PI/180)
-	}
-
-	const distanceMOWBKK = getDistanceFromLatLonInKm(
-	  55.45, 37.36, 13.45, 100.30
-	);
-
 	
-
-	
-
-	// function renderCoords(coords) {
-
-	// 	var map = new ol.Map({
-	//	   	target: 'map',
-	//	   	layers:[
-	//	   		new ol.layer.Tile({
-	//	   			source: new ol.source.OSM()
-	//	   		})
-	//	   	],
-	//	   	view: new ol.View({
-	//	   		center: ol.proj.fromLonLat([37.41, 8.82]),
-	//	   		zoom: 4
-	//	   	}),
-	//	   });
-
-	// 	var point_feature = new ol.Feature({});
-
-	// 	coords.forEach((coord) => {
-	// 		var lat = coord.lat;
-	// 		var lon = coord.lon;
-	// 		console.log({lat,lon});
-	// 		var point_geom = new ol.geom.Point(ol.proj.transform((lon, lat), 'EPSG:3857', 'EPSG:4326'));
-	// 		point_feature.setGeometry(point_geom);
-	// 	});
-		
-
-	// 	var vector_layer = new ol.layer.Vector({
-	// 	  source: new ol.source.Vector({
-	// 		features: [point_feature]
-	// 	  })
-	// 	})
-
-	// 	map.addLayer(vector_layer);
-	// 	var fill = new ol.style.Fill({
-	// 	  color: [180, 0, 0, 0.3]
-	// 	});
-		
-	// 	var stroke = new ol.style.Stroke({
-	// 	  color: [180, 0, 0, 1],
-	// 	  width: 1
-	// 	});
-	// 	var style = new ol.style.Style({
-	// 	  image: new ol.style.Circle({
-	// 		fill: fill,
-	// 		stroke: stroke,
-	// 		radius: 8
-	// 	  }),
-	// 	});
-	// 	vector_layer.setStyle(style);
-
-	// }
-
-  	
 });
 		
