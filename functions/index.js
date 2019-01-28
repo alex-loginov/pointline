@@ -181,33 +181,50 @@ $(document).ready(function() {
 		var distanceMass = outputDistance(conns, towers);
 		console.log({distanceMass});
 
-		var averageDistances = distanceMass.map(function(line) {
+		var allDist = distanceMass.reduce(function(result, line) {
 
-			return line.reduce(function(distance, tower) {
-				return distance + tower.distance;
-			}, 0) / line.length;
+			return result.concat(line);
 
+		}, []);
+
+		allDist.sort(function(a, b){
+			return a.distance - b.distance;
 		});
 
-		console.log({averageDistances});
+		console.log({allDist});
+ 		var srZ = 0;
+		var lenAllDist = allDist.length;
+		if(lenAllDist % 2 == 0) {
+			srZ = (allDist[lenAllDist/2].distance + allDist[(lenAllDist/2)+1].distance)/2;
+		}else {
+			srZ =allDist[Math.ceil(lenAllDist/2)].distance;
+		}
+		//console.log(srZ);
+		anamalDist = [];
+		allDist.forEach(function(dist){
+			if(dist.distance < (srZ+15) && dist.distance > (srZ-15)){
+				//console.log(srZ/100*115 + ' ' +srZ/100*85);
+				
+				//console.log({dist})
+			}else{
+				//console.log((srZ+15) + ' ' +(srZ-15));
+				//var er = dist.distance;
+				//console.log({dist})
+				anamalDist.push(dist);
+			}
 
-		// for(var i = 0; i <= distanceMass.length; i++){
-		// 	var part = distanceMass[i];
-		// 	console.log({part});
-		// 	//var sumPart = part.reduce((sum, ) => );
-		// 	var sumPart = 0;
-		// 	for(var q =0; q < part.length; q++){
-		// 		var dist = part[q];
-		// 		console.log({dist});
-		// 		//var dists = JSON.parse(part[q]);
-		// 		//console.log({dists});
-		// 		sumPart += dist.distance;
-		// 		console.log({sumPart});
-		// 	}
+		});
+		
+		var srDis = 0;
+		allDist.forEach(function(disdt){
+			srDis +=disdt.distance;
 
-		// 	var sredDist = sumPart/part.length;
-		// 	console.log(sredDist);
-		// }
+		});
+		return anamalDist;
+		//console.log(srZ);
+		//console.log(srDis/lenAllDist);
+
+		//console.log({myPlacemark});
 
 	}
 
@@ -253,7 +270,18 @@ $(document).ready(function() {
 				var distanceConn = build_conn(conns, towers);
 				var totalDistance = distanceLine + distanceConn;
 				outputDistance(conns, towers);
-				check_distances(conns, towers);
+				var anamalDist = check_distances(conns, towers);
+				console.log(anamalDist);
+				console.log({myPlacemark});
+				var lacemar = myPlacemark.toArray();
+				
+				lacemar.forEach(function(placemark){
+					if(placemark.iconContent == anamalDist.from){
+						console.log('ok');
+					}
+
+				});
+
 				//console.log(totalDistance);
 			});
 
