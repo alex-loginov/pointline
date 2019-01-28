@@ -1,7 +1,8 @@
 $(document).ready(function() {
 	var myMap;
 	ymaps.ready(build_map);
-	
+
+
 	$('#form-1').submit(function(e) {
 		e.preventDefault();
 		var fd = new FormData;
@@ -133,7 +134,7 @@ $(document).ready(function() {
 				distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
 			};
 		})]);
-		//console.log(lines);
+		console.log(lines);
 		return lines;
  	}
 
@@ -272,6 +273,25 @@ $(document).ready(function() {
 
 					console.log('error', { error });
 				});
+		});
+
+		$('#download').click(function() {
+			var data = {
+				fileName: fileInputName,
+			};
+
+			window.location = 'functions/' + fileInputName;
+
+			// $.post('functions/download.php', data)
+			// 	.then((data) => {
+
+			// 		console.log('success');
+			// 		//console.log(data);
+
+			// 	}).fail((error) => {
+
+			// 		console.log('error', { error });
+			// 	});
 		});
 	}
 	

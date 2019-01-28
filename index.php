@@ -21,7 +21,8 @@
 					   	<input  class="section_main-body_form-button" type="submit" value="Обработать">
 					</p>
 			  	</form> 			  	
-			  	<input  class="section_main-body_form-button" type="submit" id="saveRes" value="Обработать">
+			  	<input  class="section_main-body_form-button" type="submit" id="saveRes" value="Сохранить">
+			  	<input  class="section_main-body_form-button" type="submit" id="download" value="Скачать">
 			</div>
 		</section>
 		<div id="map"></div>
