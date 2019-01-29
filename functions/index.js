@@ -134,7 +134,7 @@ $(document).ready(function() {
 				distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
 			};
 		})]);
-		console.log(lines);
+		//console.log(lines);
 		return lines;
  	}
 
@@ -231,38 +231,111 @@ $(document).ready(function() {
 
 	function init(conns, towers, fileInputName) {  
 		polylineCollection = new ymaps.GeoObjectCollection();
-		var lines = getBrokenLines(towers);
+		placemarkCollection = new ymaps.GeoObjectCollection();
 
-		outputDistance(conns, towers);
+		var anamalDist = check_distances(conns, towers);
+		var redTowers = [];
+		anamalDist.forEach(function(dist){
+			if(!redTowers.includes(dist.to)){
+				redTowers.push(dist.to);
+			}
+			if(!redTowers.includes(dist.from)){
+				redTowers.push(dist.from);
+			}
+		});
+		console.log(redTowers);
+		console.log(anamalDist);
 
-		var distanceLine = lines.reduce(function(distance, line) {
-			return distance + addLines(line);
-		}, 0);
-		var distanceConn = build_conn(conns, towers);
-		var totalDistance = distanceLine + distanceConn;
-		//console.log(totalDistance);
 		towers.forEach(function(tower) {
-			var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
-				//balloonContent: tower.id,
-				//iconCaption: tower.id,
-				iconContent: tower.nameSupport,
+			var myPlacemark;
+			
+			var colorTower = redTowers.includes(tower.nameSupport) ? 'islands#redCircleIcon' : 'islands#blueCircleIcon';
 
-			}, {
-				preset: 'islands#blueCircleIcon',
-				draggable: true
+			// if(redTowers.includes(tower.nameSupport)){
+				//console.log(tower.nameSupport + '=' + redTower);
+				myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
+					//balloonContent: tower.id,
+					//iconCaption: tower.id,
+					iconContent: tower.nameSupport,
+				}, {
+					preset: colorTower,
+					draggable: true
+				})
 
-			})
+				placemarkCollection.add(myPlacemark);
+				myMap.geoObjects.add(placemarkCollection);
+			// }
+			// else{
+			// 	//console.log(tower.nameSupport + '!=' + redTower);
+			// 	var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
+			// 	//balloonContent: tower.id,
+			// 	//iconCaption: tower.id,
+			// 		iconContent: tower.nameSupport,
+			// 	}, {
+			// 		preset: 'islands#blueCircleIcon',
+			// 		draggable: true
+			// 	})
 
-			myMap.geoObjects.add(myPlacemark);
+			// 	placemarkCollection.add(myPlacemark);
+			// 	myMap.geoObjects.add(placemark Collection);
+			// 	return;
+			// }
+
+			
+			// var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
+			// 	//balloonContent: tower.id,
+			// 	//iconCaption: tower.id,
+
+			// 	iconContent: tower.nameSupport,
+
+			// }, {
+				
+				
+			// 	preset: 'islands#blueCircleIcon',
+			// 	draggable: true
+
+			// })
+
+			// placemarkCollection.add(myPlacemark);
+			// myMap.geoObjects.add(placemarkCollection);
+
+			var lines = getBrokenLines(towers);
+			outputDistance(conns, towers);
+			var distanceLine = lines.reduce(function(distance, line) {
+				return distance + addLines(line);
+			}, 0);
+			var distanceConn = build_conn(conns, towers);
+			var totalDistance = distanceLine + distanceConn;
+			//console.log(totalDistance);
+
+
 			myPlacemark.events.add('dragend', function (e) {
 				//var idDragendPl = e.get('target').properties.get('balloonContent');
 				var newCoords = e.get('target').geometry.getCoordinates();
 				tower.lat = newCoords[0];
 				tower.lon = newCoords[1];
 				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
-				polylineCollection.removeAll()		
+				polylineCollection.removeAll()
 				var lines = getBrokenLines(towers);
-				
+				var anamalDist = check_distances(conns, towers);
+				var redTowers = [];
+				anamalDist.forEach(function(dist){
+					if(!redTowers.includes(dist.to)){
+						redTowers.push(dist.to);
+					}
+					if(!redTowers.includes(dist.from)){
+						redTowers.push(dist.from);
+					}
+				});
+				var colorTower = redTowers.includes(e.get('target').properties.get('iconContent')) ? 'islands#redCircleIcon' : 'islands#blueCircleIcon';
+				 e.get('target').options.set({
+					preset: colorTower,
+					// iconContent: $('input[name="icon_text"]').val(),
+					// hintContent: $('input[name="hint_text"]').val(),
+					// balloonContent: $('input[name="balloon_text"]').val()
+				});
+
+
 				// lines.forEach(addLines);
 				var distanceLine = lines.reduce(function(distance, line) {
 					return distance + addLines(line);
@@ -270,17 +343,9 @@ $(document).ready(function() {
 				var distanceConn = build_conn(conns, towers);
 				var totalDistance = distanceLine + distanceConn;
 				outputDistance(conns, towers);
+
 				var anamalDist = check_distances(conns, towers);
 				console.log(anamalDist);
-				console.log({myPlacemark});
-				var lacemar = myPlacemark.toArray();
-				
-				lacemar.forEach(function(placemark){
-					if(placemark.iconContent == anamalDist.from){
-						console.log('ok');
-					}
-
-				});
 
 				//console.log(totalDistance);
 			});
