@@ -54,16 +54,31 @@ img {
 	font-size: 16px;
 	cursor: pointer;
 }
+.batton_save_and_download{
+	box-shadow: 0 0 6px 0 rgba(0,0,0,0.05);
+	background-color: #f7f7f7;
+	padding: 10px;
+}
 .section_main-body_form-button:hover{
 	box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
-/*.section__wrap{
-	margin: : 0px 20px 0px 20px;
-}*/
-
+.section__wrap{
+	/*margin: : 0px 20px 0px 20px;*/
+	display: -webkit-flex; 
+	-webkit-justify-content: flex-start;
+	display: flex;
+	justify-content: flex-start;
+	/*padding: 15px 32px;*/
+}
+.section_main-body-heder{
+	display: -webkit-flex; 
+	-webkit-justify-content: flex-start;
+	display: flex;
+	justify-content: flex-start;
+}
 #map{
 	width: 100%;
 	height: 60%;
-	padding: 0;
+	padding: 10px;
 	margin: 0;
 }

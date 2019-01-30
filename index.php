@@ -14,20 +14,26 @@
 
 		<section class="section section_main-body"> 
 			<div class="section__wrap">
+
 				<form class ="section_main-body_form" id="form-1" enctype="multipart/form-data" class="section-pick_up_file_for_conversion__form">
 					<input class="section_main-body_form-button" type="hidden" name="MAX_FILE_SIZE" value="6000000" />
 				    <p>
 				   		<input type="file" name="userfile">
 					   	<input  class="section_main-body_form-button" type="submit" value="Обработать">
 					</p>
-			  	</form> 			  	
-			  	<input  class="section_main-body_form-button" type="submit" id="saveRes" value="Сохранить">
-			  	<input  class="section_main-body_form-button" type="submit" id="download" value="Скачать">
+			  	</form>
+			  	<section class="section section_main-body batton_save_and_download">
+			  		<input  class="section_main-body_form-button" type="submit" id="saveRes" value="Сохранить">
+			  		<input  class="section_main-body_form-button" type="submit" id="download" value="Скачать">
+			  	</section> 			  	
+			  	
 			</div>
 		</section>
 		<div id="map"></div>
 		<div class="section section_main">
-			
+			<section class="section section_block-infarmation">
+				<div class=""></div>
+			</section>
 		</div>
 
 		<!-- <style>

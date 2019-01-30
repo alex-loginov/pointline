@@ -197,7 +197,7 @@ $(document).ready(function() {
 		if(lenAllDist % 2 == 0) {
 			srZ = (allDist[lenAllDist/2].distance + allDist[(lenAllDist/2)+1].distance)/2;
 		}else {
-			srZ =allDist[Math.ceil(lenAllDist/2)].distance;
+			srZ = allDist[Math.ceil(lenAllDist/2)].distance;
 		}
 		//console.log(srZ);
 		anamalDist = [];
