@@ -1,0 +1,124 @@
+*,
+h1,
+p,
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  outline: inherit;
+  line-height: inherit;
+  -webkit-user-select: inherit;
+  -moz-user-select: inherit;
+  -ms-user-select: inherit;
+  user-select: inherit;
+  text-decoration: inherit;
+  letter-spacing: inherit;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background-color: #e6e7e9;
+  font-family: 'Roboto', sans-serif;
+  height: 100%;
+
+}
+
+img {
+  vertical-align: middle;
+}
+
+.page {
+  width: 100%;
+  height: 100%;
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: -ms-flex;
+  display: -o-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  -moz-flex-direction: column;
+  -ms-flex-direction: column;
+  -o-flex-direction: column;
+  flex-direction: column;
+}
+
+.section_main-header {
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: -ms-flex;
+  display: -o-flex;
+  display: flex;
+}
+
+.section_main-body {
+  position: relative;
+  flex: 1;
+}
+
+.section_main-body_form {
+  box-shadow: 0 0 6px 0 rgba(0,0,0,0.05);
+  background-color: #f7f7f7;
+  padding: 10px;
+}
+
+.button {
+  display: inline-flex;
+  vertical-align: middle;
+  -ms-align-items: center;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  width: 180px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 100ms;
+}
+
+.button_action {
+  border: 2px solid #009aff;
+  border-radius: 20px;
+  color: #009aff;
+  background-color: rgba(0,154,255,0);
+}
+
+.button_action:hover {
+  background-color: #009aff;
+  color: #ffffff;
+}
+
+.batton_save_and_download {
+  box-shadow: 0 0 6px 0 rgba(0,0,0,0.05);
+  background-color: #f7f7f7;
+  padding: 10px;
+}
+
+.section__wrap{
+
+}
+.section_main-body-heder{
+  display: -webkit-flex; 
+  -webkit-justify-content: flex-start;
+  display: flex;
+  justify-content: flex-start;
+}
+
+#map{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.input-file {
+  display: none;
+}

@@ -420,6 +420,10 @@ $(document).ready(function() {
 	    //myMap.setBounds(myPolyline.geometry.getBounds());
 	}
 
+	$('.button_input-file').click(() => {
+		$('#input-file').click();
+	});
+
 	
 });
 		
