@@ -11,24 +11,50 @@
 
       <section class="section section_main-header">
 
-        <form class ="section_main-body_form" id="form-1" enctype="multipart/form-data" class="section-pick_up_file_for_conversion__form">
+        <form id="form-1" enctype="multipart/form-data" class="form-start">
 
           <button type="button" class="button button_action button_input-file">Выберите файл</button>
           <input type="file" name="userfile" class="input-file" id="input-file">
-          
-
           <input class="button button_action" type="submit" value="Обработать">
 
         </form>
-        <section class="section section_main-body batton_save_and_download">
+
+        <section class="section section_main-body">
           <input class="button button_action" type="button" id="saveRes" value="Сохранить">
           <input class="button button_action" type="button" id="download" value="Скачать">
         </section>
-          
+
+        <p id="name-VL">Назание VL</p>
       </section>
 
       <section class="section section_main-body">
-        <div id="map"></div>
+        <div class="section-map">
+          <div id="map"></div>
+        </div>
+        <div class="section-information">
+          <div class="basic_inf">
+            <div class="label label-basic_inf">
+              <h3>Общая протяженность: <p id="total_dist"></p></h3>
+            </div>
+            <div class="label label-basic_inf">
+              <h3>Расстояния между опорами:</h3>
+              <ul id="distance-between-towers"  class="common-list"></ul>
+            </div>
+          </div>
+          <div class="verification_inf">
+            <div class="label label-verification_inf">
+              <h3>Аномальные расстояния между опорами:</h3>
+              <ul id="anamal-distance-between-towers" class="common-list"></ul>
+            </div>
+            <div class="label verification_inf">
+              <h3>Опоры на которые стоит обратить внимание:</h3>
+                <ul id="anamal-towers" class="common-list"></ul>
+               
+
+            </div>
+          </div>
+          
+        </div>
       </section>
 
   </div>

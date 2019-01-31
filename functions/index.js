@@ -233,7 +233,32 @@ $(document).ready(function() {
 		polylineCollection = new ymaps.GeoObjectCollection();
 		placemarkCollection = new ymaps.GeoObjectCollection();
 
+		var lines = getBrokenLines(towers);
+		outputDistance(conns, towers);
+		var distanceLine = lines.reduce(function(distance, line) {
+			return distance + addLines(line);
+		}, 0);
+		var distanceConn = build_conn(conns, towers);
+		var totalDistance = distanceLine + distanceConn;
+		var element = $('#total_dist');
+		generateLI(roundNumber(totalDistance, 1), element);
+
 		var anamalDist = check_distances(conns, towers);
+		//Вывод анамальных расстояний
+		var distance_betwen_towers = outputDistance(conns, towers);
+		distance_betwen_towers.forEach(function(line){
+			line.forEach(function(dist){	
+				var element = $('#distance-between-towers');
+				var text = 'Пролет ' + dist.from + ' - ' + dist.to + ':  ' + roundNumber(dist.distance, 1) + ' м';
+				generateLI(text, element);
+			});
+		});
+		anamalDist.forEach(function(dist){
+			var element = $('#anamal-distance-between-towers');
+			var text = 'Пролет ' + dist.from + ' - ' + dist.to + ':  ' + roundNumber(dist.distance, 1) + ' м';
+			generateLI(text, element);
+
+		});
 		var redTowers = [];
 		anamalDist.forEach(function(dist){
 			if(!redTowers.includes(dist.to)){
@@ -243,6 +268,12 @@ $(document).ready(function() {
 				redTowers.push(dist.from);
 			}
 		});
+		//Вывод плохих опор
+		redTowers.forEach(function(tower){
+			var element = $('#anamal-towers');
+			var text = 'Опора ' + tower;
+			generateLI(text, element);
+		});
 		console.log(redTowers);
 		console.log(anamalDist);
 
@@ -251,11 +282,8 @@ $(document).ready(function() {
 			
 			var colorTower = redTowers.includes(tower.nameSupport) ? 'islands#redCircleIcon' : 'islands#blueCircleIcon';
 
-			// if(redTowers.includes(tower.nameSupport)){
-				//console.log(tower.nameSupport + '=' + redTower);
 				myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
-					//balloonContent: tower.id,
-					//iconCaption: tower.id,
+
 					iconContent: tower.nameSupport,
 				}, {
 					preset: colorTower,
@@ -264,49 +292,7 @@ $(document).ready(function() {
 
 				placemarkCollection.add(myPlacemark);
 				myMap.geoObjects.add(placemarkCollection);
-			// }
-			// else{
-			// 	//console.log(tower.nameSupport + '!=' + redTower);
-			// 	var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
-			// 	//balloonContent: tower.id,
-			// 	//iconCaption: tower.id,
-			// 		iconContent: tower.nameSupport,
-			// 	}, {
-			// 		preset: 'islands#blueCircleIcon',
-			// 		draggable: true
-			// 	})
 
-			// 	placemarkCollection.add(myPlacemark);
-			// 	myMap.geoObjects.add(placemark Collection);
-			// 	return;
-			// }
-
-			
-			// var myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
-			// 	//balloonContent: tower.id,
-			// 	//iconCaption: tower.id,
-
-			// 	iconContent: tower.nameSupport,
-
-			// }, {
-				
-				
-			// 	preset: 'islands#blueCircleIcon',
-			// 	draggable: true
-
-			// })
-
-			// placemarkCollection.add(myPlacemark);
-			// myMap.geoObjects.add(placemarkCollection);
-
-			var lines = getBrokenLines(towers);
-			outputDistance(conns, towers);
-			var distanceLine = lines.reduce(function(distance, line) {
-				return distance + addLines(line);
-			}, 0);
-			var distanceConn = build_conn(conns, towers);
-			var totalDistance = distanceLine + distanceConn;
-			//console.log(totalDistance);
 
 
 			myPlacemark.events.add('dragend', function (e) {
@@ -335,8 +321,47 @@ $(document).ready(function() {
 					// balloonContent: $('input[name="balloon_text"]').val()
 				});
 
+				//var anamalDist = check_distances(conns, towers);
+				//console.log({anamalDist});
 
-				// lines.forEach(addLines);
+				var lines = getBrokenLines(towers);
+				outputDistance(conns, towers);
+				var distanceLine = lines.reduce(function(distance, line) {
+					return distance + addLines(line);
+				}, 0);
+				var distanceConn = build_conn(conns, towers);
+				var totalDistance = distanceLine + distanceConn;
+				var element = $('#total_dist');
+				clearElement(element);
+				generateLI(roundNumber(totalDistance, 1), element);
+
+				element = $('#anamal-distance-between-towers');
+				clearElement(element);
+				//Вывод анамальных расстояний
+				anamalDist.forEach(function(dist){
+					var text = 'Пролет ' + dist.from + ' - ' + dist.to + ':  ' + roundNumber(dist.distance, 1) + ' м';
+					generateLI(text, element);
+
+				});
+
+				element = $('#anamal-towers');
+				clearElement(element);
+				redTowers.forEach(function(tower){
+					var element = $('#anamal-towers');
+					var text = 'Опора ' + tower;
+					generateLI(text, element);
+				});
+				element = $('#distance-between-towers');
+				clearElement(element);
+				var distance_betwen_towers = outputDistance(conns, towers);
+				distance_betwen_towers.forEach(function(line){
+					line.forEach(function(dist){	
+						var element = $('#distance-between-towers');
+						var text = 'Пролет ' + dist.from + ' - ' + dist.to + ':  ' + roundNumber(dist.distance, 1) + ' м';
+						generateLI(text, element);
+					});
+				});
+						// lines.forEach(addLines);
 				var distanceLine = lines.reduce(function(distance, line) {
 					return distance + addLines(line);
 				}, 0);
@@ -424,6 +449,33 @@ $(document).ready(function() {
 		$('#input-file').click();
 	});
 
+	function clearElement(element) {
+		element.html('');
+	}
+
+	function generateLI(text, element) {
+		var li = $('<li>').text(text);
+		element.append(li);
+	}
+
+	function setNameVL(name) {
+		$('#name-VL').text(name);
+	}
+
+
+	function roundNumber(number, n) {
+		if(typeof number !== 'number') {
+			return 0;
+		}
+
+
+		if(Number.isInteger(n)) {
+			var m = 10 ** n;
+			return Math.round(number*m)/m;
+		}
+
+		return Math.round(number);
+	}
+
 	
 });
-		
