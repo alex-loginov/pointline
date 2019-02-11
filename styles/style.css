@@ -1,4 +1,4 @@
-*,
+download*,
 h1,
 p,
 body {
@@ -124,8 +124,17 @@ img {
 
 .common-list {
   padding-left: 30px;
+  margin: 0;
 }
-
+#total_dist{
+  padding: 0 15px;
+}
+.label-basic_inf{
+  padding: 0 15px;
+}
+.verification_inf{
+  padding: 0 15px;
+}
 .common-list-item {
 
 }

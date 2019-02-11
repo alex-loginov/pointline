@@ -10,8 +10,8 @@ $(document).ready(function() {
 		var fileInput = $(this).find('[name=userfile]').prop('files')[0];
 		var fileInputName = fileInput.name;
 		fd.append('file', fileInput);
-		plotting(fileInputName);		
-		function plotting(fileInputName){
+		parseCoords(fileInputName);		
+		function parseCoords(fileInputName){
 			$.ajax({
 				url: 'functions/parseCoords.php',
 				type: 'POST',
@@ -20,20 +20,9 @@ $(document).ready(function() {
 				data: fd,
 				async: true,
 				success: function(data) {
-					// console.log({ data });
-					// return;
 					var towers = JSON.parse(data);
-					//console.log({ towers });
-					
-					//init(towers);
-					//var lines = getBrokenLines(towers);
-					//lines.forEach(addLines);
-					//console.log('lines', lines);
-					//console.log({fileInputName});
-					building_connections(towers, fileInputName);
-
-					//init(null, towers);
-
+					parseConn(towers, fileInputName);
+					console.log({towers});
 				},
 				error: function(error) {
 					console.log('error', error);
@@ -41,7 +30,7 @@ $(document).ready(function() {
 			});
 		}
 		
-		function building_connections(towers, fileInputName) {
+		function parseConn(towers, fileInputName) {
 			$.ajax({
 				url: 'functions/parseConn.php',
 				type: 'POST',
@@ -67,14 +56,7 @@ $(document).ready(function() {
 
 	});
 
-	// ymaps.ready(init);
- 	function outputDistance(conns, towers){
- 		//console.log('outputDistance: >>');
- 		//var coordTowerLast = 0;
- 		//var flag = 0;
-
- 		var coordTowerLast = [];
- 		var coordTowerFirst = [];
+ 	function getAllDist(conns, towers){
 		var groupTowers = _.groupBy(towers, 'idSector');
 		var sortedTowers = [];
 		var sectorIds = Object.keys(groupTowers);
@@ -86,8 +68,6 @@ $(document).ready(function() {
 			var lenSortedTowers = sortedTowers.length;
 			var outputDistanceM = [];
 
-
-
 			for(var i = 0; i < lenSortedTowers-1; i++){
 				var coordTower1 = [sortedTowers[i].lat, sortedTowers[i].lon];
 				var coordTower2 = [sortedTowers[i+1].lat, sortedTowers[i+1].lon];
@@ -97,44 +77,29 @@ $(document).ready(function() {
 					distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
 				});
 			}
-			
-			
 			return outputDistanceM;
 		});
-		var distConns = 0;
 		var coordTower1 = [];
 		var coordTower2 = [];
 		var nameTower1 = [];
 		var nameTower2 = [];
-		var row = [];
-		var res = [];
-		// var outputDistanceM1 = [];
 		lines = lines.concat([conns.map(function(conn){
-			// console.log({test1: JSON.parse(JSON.stringify(outputDistanceM1))});
 			towers.forEach(function(tower){
-				
 				if (tower.idSupport == conn[1]){
-
 					coordTower1 = [tower.lat,tower.lon];
 					nameTower1 = tower.nameSupport;
-
 				}
 				if (tower.idSupport == conn[2]){
 					coordTower2 = [tower.lat,tower.lon];
 					nameTower2 = tower.nameSupport;
 				}
-				
 			});
-			
-			// outputDistanceM1.push();
-
 			return {
 				from: nameTower1,
 				to: nameTower2,
 				distance: getDistanceBetweenTwoTowers(coordTower1, coordTower2),
 			};
 		})]);
-		//console.log(lines);
 		return lines;
  	}
 
@@ -143,7 +108,6 @@ $(document).ready(function() {
 	}
 
 	function build_conn(conns, towers){
-		//console.log(conns);
 		var distConns = 0;
 		var tower1 = [];
 		var tower2 = [];
@@ -160,14 +124,13 @@ $(document).ready(function() {
 				row = [tower1,tower2];
 			});
 			res.push(row);
-
 		});
-		//console.log({res});
 		var distance = res.reduce(function(distance, re) {
 			return distance + addLines(re);
 		}, 0);
 		return distance;
 	}
+
 	function build_map(){
 		myMap = new ymaps.Map("map", {
 			center: [56.309319, 43.962170],
@@ -175,23 +138,14 @@ $(document).ready(function() {
 		});
 	}
 
-
 	function check_distances(conns, towers){
-
-		var distanceMass = outputDistance(conns, towers);
-		console.log({distanceMass});
-
+		var distanceMass = getAllDist(conns, towers);
 		var allDist = distanceMass.reduce(function(result, line) {
-
 			return result.concat(line);
-
 		}, []);
-
 		allDist.sort(function(a, b){
 			return a.distance - b.distance;
 		});
-
-		console.log({allDist});
  		var srZ = 0;
 		var lenAllDist = allDist.length;
 		if(lenAllDist % 2 == 0) {
@@ -199,42 +153,24 @@ $(document).ready(function() {
 		}else {
 			srZ = allDist[Math.ceil(lenAllDist/2)].distance;
 		}
-		//console.log(srZ);
-		anamalDist = [];
+		anomalDist = [];
 		allDist.forEach(function(dist){
 			if(dist.distance < (srZ+15) && dist.distance > (srZ-15)){
-				//console.log(srZ/100*115 + ' ' +srZ/100*85);
-				
-				//console.log({dist})
 			}else{
-				//console.log((srZ+15) + ' ' +(srZ-15));
-				//var er = dist.distance;
-				//console.log({dist})
-				anamalDist.push(dist);
+				anomalDist.push(dist);
 			}
-
-		});
-		
+		});		
 		var srDis = 0;
 		allDist.forEach(function(disdt){
 			srDis +=disdt.distance;
-
 		});
-		return anamalDist;
-		//console.log(srZ);
-		//console.log(srDis/lenAllDist);
-
-		//console.log({myPlacemark});
-
+		return anomalDist;
 	}
-
 
 	function init(conns, towers, fileInputName) {  
 		polylineCollection = new ymaps.GeoObjectCollection();
 		placemarkCollection = new ymaps.GeoObjectCollection();
-
 		var lines = getBrokenLines(towers);
-		outputDistance(conns, towers);
 		var distanceLine = lines.reduce(function(distance, line) {
 			return distance + addLines(line);
 		}, 0);
@@ -242,10 +178,9 @@ $(document).ready(function() {
 		var totalDistance = distanceLine + distanceConn;
 		var element = $('#total_dist');
 		generateLI(roundNumber(totalDistance, 1), element);
-
-		var anamalDist = check_distances(conns, towers);
+		var anomalDist = check_distances(conns, towers);
 		//Вывод анамальных расстояний
-		var distance_betwen_towers = outputDistance(conns, towers);
+		var distance_betwen_towers = getAllDist(conns, towers);
 		distance_betwen_towers.forEach(function(line){
 			line.forEach(function(dist){	
 				var element = $('#distance-between-towers');
@@ -253,34 +188,34 @@ $(document).ready(function() {
 				generateLI(text, element);
 			});
 		});
-		anamalDist.forEach(function(dist){
+		anomalDist.forEach(function(dist){
 			var element = $('#anamal-distance-between-towers');
 			var text = 'Пролет ' + dist.from + ' - ' + dist.to + ':  ' + roundNumber(dist.distance, 1) + ' м';
 			generateLI(text, element);
-
 		});
-		var redTowers = [];
-		anamalDist.forEach(function(dist){
-			if(!redTowers.includes(dist.to)){
-				redTowers.push(dist.to);
+		var anomalTowers = [];
+		anomalDist.forEach(function(dist){
+			if(!anomalTowers.includes(dist.to)){
+				anomalTowers.push(dist.to);
 			}
-			if(!redTowers.includes(dist.from)){
-				redTowers.push(dist.from);
+			if(!anomalTowers.includes(dist.from)){
+				anomalTowers.push(dist.from);
 			}
 		});
 		//Вывод плохих опор
-		redTowers.forEach(function(tower){
+		anomalTowers.forEach(function(tower){
 			var element = $('#anamal-towers');
 			var text = 'Опора ' + tower;
 			generateLI(text, element);
 		});
-		console.log(redTowers);
-		console.log(anamalDist);
+		console.log(anomalTowers);
+		console.log(anomalDist);
 
 		towers.forEach(function(tower) {
 			var myPlacemark;
 			
-			var colorTower = redTowers.includes(tower.nameSupport) ? 'islands#redCircleIcon' : 'islands#blueCircleIcon';
+			var colorTower = anomalTowers.includes(tower.nameSupport)
+			? 'islands#redCircleIcon' : 'islands#blueCircleIcon';
 
 				myPlacemark = new ymaps.Placemark([tower.lat, tower.lon], {
 
@@ -289,46 +224,34 @@ $(document).ready(function() {
 					preset: colorTower,
 					draggable: true
 				})
-
 				placemarkCollection.add(myPlacemark);
 				myMap.geoObjects.add(placemarkCollection);
 
-
-
-			myPlacemark.events.add('dragend', function (e) {
-				//var idDragendPl = e.get('target').properties.get('balloonContent');
-				var newCoords = e.get('target').geometry.getCoordinates();
-				tower.lat = newCoords[0];
-				tower.lon = newCoords[1];
-				//console.log(`Новые коорд: ${tower.lat} ${tower.lon}!`);
-				polylineCollection.removeAll()
-				var lines = getBrokenLines(towers);
-				var anamalDist = check_distances(conns, towers);
-				var redTowers = [];
-				anamalDist.forEach(function(dist){
-					if(!redTowers.includes(dist.to)){
-						redTowers.push(dist.to);
-					}
-					if(!redTowers.includes(dist.from)){
-						redTowers.push(dist.from);
-					}
+				myPlacemark.events.add('dragend', function (e) {
+					var newCoords = e.get('target').geometry.getCoordinates();
+					tower.lat = newCoords[0];
+					tower.lon = newCoords[1];
+					polylineCollection.removeAll()
+					var anomalDist = check_distances(conns, towers);
+					var anomalTowers = [];
+					anomalDist.forEach(function(dist){
+						if(!anomalTowers.includes(dist.to)){
+							anomalTowers.push(dist.to);
+						}
+						if(!anomalTowers.includes(dist.from)){
+							anomalTowers.push(dist.from);
+						}
 				});
-				var colorTower = redTowers.includes(e.get('target').properties.get('iconContent')) ? 'islands#redCircleIcon' : 'islands#blueCircleIcon';
+				var colorTower = anomalTowers.includes(e.get('target').properties.get('iconContent'))
+				?'islands#redCircleIcon' : 'islands#blueCircleIcon';
 				 e.get('target').options.set({
 					preset: colorTower,
-					// iconContent: $('input[name="icon_text"]').val(),
-					// hintContent: $('input[name="hint_text"]').val(),
-					// balloonContent: $('input[name="balloon_text"]').val()
 				});
-
-				//var anamalDist = check_distances(conns, towers);
-				//console.log({anamalDist});
-
 				var lines = getBrokenLines(towers);
-				outputDistance(conns, towers);
 				var distanceLine = lines.reduce(function(distance, line) {
 					return distance + addLines(line);
 				}, 0);
+
 				var distanceConn = build_conn(conns, towers);
 				var totalDistance = distanceLine + distanceConn;
 				var element = $('#total_dist');
@@ -338,7 +261,7 @@ $(document).ready(function() {
 				element = $('#anamal-distance-between-towers');
 				clearElement(element);
 				//Вывод анамальных расстояний
-				anamalDist.forEach(function(dist){
+				anomalDist.forEach(function(dist){
 					var text = 'Пролет ' + dist.from + ' - ' + dist.to + ':  ' + roundNumber(dist.distance, 1) + ' м';
 					generateLI(text, element);
 
@@ -346,14 +269,14 @@ $(document).ready(function() {
 
 				element = $('#anamal-towers');
 				clearElement(element);
-				redTowers.forEach(function(tower){
+				anomalTowers.forEach(function(tower){
 					var element = $('#anamal-towers');
 					var text = 'Опора ' + tower;
 					generateLI(text, element);
 				});
 				element = $('#distance-between-towers');
 				clearElement(element);
-				var distance_betwen_towers = outputDistance(conns, towers);
+				var distance_betwen_towers = getAllDist(conns, towers);
 				distance_betwen_towers.forEach(function(line){
 					line.forEach(function(dist){	
 						var element = $('#distance-between-towers');
@@ -361,18 +284,15 @@ $(document).ready(function() {
 						generateLI(text, element);
 					});
 				});
-						// lines.forEach(addLines);
 				var distanceLine = lines.reduce(function(distance, line) {
 					return distance + addLines(line);
 				}, 0);
 				var distanceConn = build_conn(conns, towers);
 				var totalDistance = distanceLine + distanceConn;
-				outputDistance(conns, towers);
 
-				var anamalDist = check_distances(conns, towers);
-				console.log(anamalDist);
+				var anomalDist = check_distances(conns, towers);
+				console.log(anomalDist);
 
-				//console.log(totalDistance);
 			});
 
 		});
@@ -386,7 +306,7 @@ $(document).ready(function() {
 
 					console.log('success');
 					console.log(data);
-
+					alert( "Изменения сохранены" );
 				}).fail((error) => {
 
 					console.log('error', { error });
@@ -394,22 +314,7 @@ $(document).ready(function() {
 		});
 
 		$('#download').click(function() {
-			var data = {
-				fileName: fileInputName,
-			};
-
 			window.location = 'functions/' + fileInputName;
-
-			// $.post('functions/download.php', data)
-			// 	.then((data) => {
-
-			// 		console.log('success');
-			// 		//console.log(data);
-
-			// 	}).fail((error) => {
-
-			// 		console.log('error', { error });
-			// 	});
 		});
 	}
 	
@@ -424,25 +329,19 @@ $(document).ready(function() {
 			});
 			return line;
 		});
-		//console.log(lines);
 		return lines;
 
 	}
 
 	function addLines(line) {
 		var distPolyline = 0;
-
 		var lineString = new ymaps.geometry.LineString(line);
-    	var geoObject = new ymaps.GeoObject({ geometry: lineString });
-    	polylineCollection.add(geoObject);
-	    myMap.geoObjects.add(polylineCollection);
-	    var a = polylineCollection.toArray();
-	    //console.log(a);
-	    var distance = geoObject.geometry.getDistance();
-    	//console.log(Polyline);
-	    //distPolyline = myPolyline.geometry.getDistance();
-	    return distance;
-	    //myMap.setBounds(myPolyline.geometry.getBounds());
+		var geoObject = new ymaps.GeoObject({ geometry: lineString });
+		polylineCollection.add(geoObject);
+		myMap.geoObjects.add(polylineCollection);
+		var a = polylineCollection.toArray();
+		var distance = geoObject.geometry.getDistance();
+		return distance;
 	}
 
 	$('.button_input-file').click(() => {
@@ -462,18 +361,14 @@ $(document).ready(function() {
 		$('#name-VL').text(name);
 	}
 
-
 	function roundNumber(number, n) {
 		if(typeof number !== 'number') {
 			return 0;
 		}
-
-
 		if(Number.isInteger(n)) {
 			var m = 10 ** n;
 			return Math.round(number*m)/m;
 		}
-
 		return Math.round(number);
 	}
 

@@ -24,7 +24,6 @@
           <input class="button button_action" type="button" id="download" value="Скачать">
         </section>
 
-        <p id="name-VL">Назание VL</p>
       </section>
 
       <section class="section section_main-body">
@@ -34,7 +33,8 @@
         <div class="section-information">
           <div class="basic_inf">
             <div class="label label-basic_inf">
-              <h3>Общая протяженность: <p id="total_dist"></p></h3>
+              <h3>Общая протяженность: </h3>
+              <p id="total_dist"></p>
             </div>
             <div class="label label-basic_inf">
               <h3>Расстояния между опорами:</h3>
@@ -46,7 +46,7 @@
               <h3>Аномальные расстояния между опорами:</h3>
               <ul id="anamal-distance-between-towers" class="common-list"></ul>
             </div>
-            <div class="label verification_inf">
+            <div class="label 1verification_inf">
               <h3>Опоры на которые стоит обратить внимание:</h3>
                 <ul id="anamal-towers" class="common-list"></ul>
                
